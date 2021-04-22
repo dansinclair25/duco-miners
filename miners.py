@@ -88,7 +88,7 @@ def main():
             
             miners.sort(key=itemgetter(0))
 
-            user_balance = balances_json_data.get("dansinclair25", "- DUCO")
+            user_balance = balances_json_data.get(username, "- DUCO")
             total_success_pc = int((totalAccepted/totalSharerate)*100) if totalSharerate > 0 else 0
             total_success = f'{total_success_pc}% ({totalAccepted}/{totalSharerate})'
             print(tabulate([[user_balance, len(miners), format_hashrate(total_hash), f'{total_success}']], headers=["Balance", "Total miners", "Total hashrate", "Total success"]))
