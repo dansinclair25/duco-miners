@@ -4,6 +4,8 @@ duco-miners is a super simple terminal "dashboard" for you to view a list of you
 
 ![screenshot](screenshot.png)
 
+PLEASE NOTE: The "Daily profit" will differ to what you see on the Web and Desktop Wallets as they use different refresh rates!! 
+
 ## Usage
 
 1. Clone this repo
