@@ -34,11 +34,11 @@ def main():
 
     while True:
         try:
-            miners_response = requests.get("https://server.duinocoin.com/miners.json")
+            miners_response = requests.get(f"https://server.duinocoin.com/miners/{username}")
             miners_response.raise_for_status()
             miners_json_data = json.loads(miners_response.text)
 
-            balances_response = requests.get("https://server.duinocoin.com/balances.json")
+            balances_response = requests.get(f"https://server.duinocoin.com/balances/{username}")
             balances_response.raise_for_status()
             balances_json_data = json.loads(balances_response.text)
 
@@ -63,7 +63,8 @@ def main():
 
             duco_price_usd = api_json_data.get('Duco price', 0)
 
-            user_miners = [v for v in miners_json_data.values() if v["User"] == username]
+            #user_miners = [v for v in miners_json_data.values() if v["User"] == username]
+            user_miners = miners_json_data.get('result')
 
             if not user_miners:
                 print("No miners found.")
@@ -73,34 +74,34 @@ def main():
             totalSharerate = 0
             totalAccepted = 0
             for v in user_miners:
-                if v["User"] == username:
-                    hashrate = int(v.get("Hashrate", 0))
-                    total_hash += hashrate
+               hashrate = int(v.get("hashrate", 0))
+               total_hash += hashrate
 
-                    accepted = int(v.get("Accepted", 0))
-                    rejected = int(v.get("Rejected", 0))
-                    sharerate = int(v.get("Sharerate", 0)) 
-                    
-                    if sharerate < (accepted + rejected):
-                            sharerate = accepted + rejected
+               accepted = int(v.get("accepted", 0))
+               rejected = int(v.get("rejected", 0))
+               sharerate = int(v.get("sharetime", 0)) 
+               
+               if sharerate < (accepted + rejected):
+                       sharerate = accepted + rejected
 
-                    totalSharerate += sharerate
-                    totalAccepted += accepted
+               totalSharerate += sharerate
+               totalAccepted += accepted
 
-                    
-                    successRate = f'{accepted}/{sharerate}'
-                    
-                    algo = v["Algorithm"]
-                    diff = int(v.get("Diff", 0))
-                    id = v["Identifier"]
-                    software = v["Software"]
+               
+               successRate = f'{accepted}/{sharerate}'
+               
+               algo = v["algorithm"]
+               diff = int(v.get("diff", 0))
+               id = v["identifier"]
+               software = v["software"]
 
-                    miners.append([id, software, algo, successRate, format_hashrate(hashrate), diff])
+               miners.append([id, software, algo, successRate, format_hashrate(hashrate), diff])
             
             miners.sort(key=itemgetter(0))
 
-            user_balance_str = balances_json_data.get(username, "0 DUCO").replace(' DUCO', ' ᕲ')
-            user_balance = float(user_balance_str.replace(' ᕲ', ''))
+            #user_balance_str = balances_json_data.get(username, "0 DUCO").replace(' DUCO', ' ᕲ')
+            #user_balance = float(user_balance_str.replace(' ᕲ', ''))
+            user_balance = balances_json_data.get('result').get('balance')
 
             balance_difference = user_balance - prev_balance
             time_difference = time.time() - last_update if last_update else 0
@@ -108,7 +109,7 @@ def main():
 
             total_success_pc = int((totalAccepted/totalSharerate)*100) if totalSharerate > 0 else 0
             total_success = f'{total_success_pc}% ({totalAccepted}/{totalSharerate})'
-            print(tabulate([[user_balance_str, len(miners), format_hashrate(total_hash), f'{total_success}', f'{daily_average} ᕲ']], headers=["Balance", "Total miners", "Total hashrate", "Total success", "Daily profit"]))
+            print(tabulate([[user_balance, len(miners), format_hashrate(total_hash), f'{total_success}', f'{daily_average} ᕲ']], headers=["Balance", "Total miners", "Total hashrate", "Total success", "Daily profit"]))
             
             if miners:
                 print(tabulate(miners, headers=["ID", "Software", "Algo", "Success", "Hashrate", "Diff"], tablefmt='fancy_grid'))
